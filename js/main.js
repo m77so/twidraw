@@ -39,7 +39,6 @@ $(function () {
 			this.flag = "save";
 		},
 		undo : function(){
-			console.log(this.img.length);
 			if (this.img.length > 0) {
 				var img = this.img[0];
 				if (this.img.length > 1) {
@@ -60,7 +59,6 @@ $(function () {
 			}
 		},
 		redo : function(){
-			console.log(this.undoimg);
 			if (this.undoimg.length > 0) {
 				var img = this.undoimg.pop();
 				this.img.push(img);
