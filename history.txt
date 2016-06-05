@@ -1,0 +1,6 @@
+v1.0.0 
+    公開
+v1.0.1 
+    change:text,lineのカラーピック時にブラシをそれに変更。
+    bugfix:lineをクリックした時に描画されない
+    bugfix:lineのプレビューがずれている
