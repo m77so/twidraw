@@ -1,6 +1,10 @@
-v1.0.0 
+2016-06-05 v1.0.0 
     公開
-v1.0.1 
+2016-06-05 v1.0.1 
     change:text,lineのカラーピック時にブラシをそれに変更。
     bugfix:lineをクリックした時に描画されない
     bugfix:lineのプレビューがずれている
+2016-06-05 v1.0.2
+    update:local画像のとりこみ
+    change:画像の縦横比を維持
+    bugfix:canvasのカーソルを非表示

@@ -100,7 +100,7 @@ textarea {
     border: solid 1px #222;
     background-image: url("../img/transparent.png");
     background-repeat: repeat;
-    resize: both;
+    cursor: none;
 }
 #canvas-line{
     width:64px;
@@ -128,6 +128,8 @@ body{
 #twitterStamp{
     height:96px;
     width: 96px;
+    max-height: 196px;
+    max-width:196px;
 }
 
 .cnt-cell{

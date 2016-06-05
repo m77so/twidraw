@@ -79,7 +79,7 @@ $(function () {
                 if(brushType == "stamp"){
                     var img = new Image();
                     img.src = $stamp.attr("src");
-                    ctx.drawImage(img,mouseX,mouseY,stampsize,stampsize);
+                    ctx.drawImage(img,mouseX,mouseY,stampsize,stampsize/img.width*img.height);
                 }else if(brushType == "text"){
                     ctx.font = text.size ;
                     ctx.fillStyle = text.color;
@@ -114,7 +114,7 @@ $(function () {
         if(brushType == "stamp"){
             var img = new Image();
             img.src = $stamp.attr("src");
-            ctx.drawImage(img,mouseX,mouseY,stampsize,stampsize);
+            ctx.drawImage(img,mouseX,mouseY,stampsize,stampsize/img.width*img.height);
         }else if(brushType == "text"){
             ctx.font = text.size ;
             ctx.fillStyle = text.color;
@@ -144,7 +144,7 @@ $(function () {
             if(brushType == "stamp"){
                 var img = new Image();
                 img.src = $stamp.attr("src");
-                ctx.drawImage(img,finger[i].x1,finger[i].y1,stampsize,stampsize);
+                ctx.drawImage(img,finger[i].x1,finger[i].y1,stampsize,stampsize/img.width*img.height);
             }else if(brushType == "text"){
                 ctx.font = text.size ;
                 ctx.fillStyle = text.color;
@@ -233,6 +233,25 @@ $(function () {
     textChangeHandler();
     
     
+  $("#uploadImg").change(function(evt) {
+    var file = this.files[0];
+    if (!file.type.match(/^image\/(png|jpeg|gif)$/)) return;
+    var image = new Image();
+    var reader = new FileReader();
+    reader.onload = function(evt) {
+      image.onload = function() {
+        //ctx.drawImage(image, 0, 0);
+        $stamp.attr("src",image.src);
+        $stampSize[0].value = image.width;
+        stampsize = image.width;
+      }
+      image.src = evt.target.result;
+    }
+    reader.readAsDataURL(file);
+  });
+    
+    
+    
     $("#download").on(_touch,function(ev){
 //http://qiita.com/0829/items/a8c98c8f53b2e821ac94
 //http://jsdo.it/Yukisuke/c1VD
@@ -289,16 +308,18 @@ $(function () {
 
         brushType = this.getAttribute("brush");
     });
+    
+    
+    function sizing(){
+        var h = $("#canvas-wrapper").height()*4;
+        var w = $("#canvas-wrapper").width()-4;
+        var ch = document.getElementById("canvas-height");
+        var cw = document.getElementById("canvas-width");
+        ch.value = h;
+        cw.value = w;
+        $("#canvas").attr({height:h});
+        $("#canvas").attr({width:w});
+    }
 
 });
 
-function sizing(){
-    var h = $("#canvas-wrapper").height()*4;
-    var w = $("#canvas-wrapper").width()-4;
-    var ch = document.getElementById("canvas-height");
-    var cw = document.getElementById("canvas-width");
-    ch.value = h;
-    cw.value = w;
-	$("#canvas").attr({height:h});
-	$("#canvas").attr({width:w});
-}
