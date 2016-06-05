@@ -27,7 +27,6 @@ $(function () {
 	var undoImage = {
 		img :[ctx.getImageData(0, 0,canvas.width,canvas.height)],
 		undoimg :[],
-		flag: "",
 		save : function(){
 			var img = ctx.getImageData(0, 0,canvas.width,canvas.height);
 			this.img.push(img);
@@ -36,43 +35,29 @@ $(function () {
 			}
 			this.undoimg = [];
 			this.check();
-			this.flag = "save";
 		},
 		undo : function(){
 			if (this.img.length > 0) {
-				var img = this.img[0];
-				if (this.img.length > 1) {
-					img = this.img.pop();
-					this.undoimg.push(img);
-					if (this.flag !== "undo") {
-						img = this.img.pop();
-						this.undoimg.push(img);
-					}
-				}
+				var img = this.img.pop();
+				this.undoimg.push(this.mouse.img);
 				ctx.putImageData(img,0,0);
 				this.mouse.img = img;
 				while(this.undoimg.length > 20){
 					this.undoimg.shift();
 				}
 				this.check();
-				this.flag = "undo";
 			}
 		},
 		redo : function(){
 			if (this.undoimg.length > 0) {
 				var img = this.undoimg.pop();
-				this.img.push(img);
-				if (this.flag !== "redo") {
-					img = this.undoimg.pop();
-					this.img.push(img);
-				}
+				this.img.push(this.mouse.img);
 				ctx.putImageData(img,0,0);
 				this.mouse.img = img;
 				while(this.img.length > 20){
 					this.img.shift();
 				}
 				this.check();
-				this.flag = "redo";
 			}
 		},
 		mouse:{
@@ -142,6 +127,7 @@ $(function () {
 		mouseX1 = mouseX;
 		mouseY1 = mouseY;
 		undoImage.mouse.undo();
+		undoImage.save();
 		if(brushType=="line" || brushType=="straight-line"){
 			ctx.beginPath();
 			ctx.fillStyle = line.color;
@@ -175,7 +161,6 @@ $(function () {
 			ctx.stroke();
 		}
 		undoImage.mouse.save();
-		undoImage.save();
 	});
 
 	//touch
@@ -394,12 +379,7 @@ $(function () {
 		if(e.ctrlKey) {
 			if(e.keyCode == 90){
 				undoImage.undo();
-			}
-		}
-	});
-	$(document).on("keydown",canvas,function(e){
-		if(e.ctrlKey) {
-			if(e.keyCode == 89){
+			}else if(e.keyCode == 89){
 				undoImage.redo();
 			}
 		}
