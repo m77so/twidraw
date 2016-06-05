@@ -14,6 +14,8 @@ $(function () {
     var $lineSize = $("#line-size");
     var canvas_line = document.getElementById("canvas-line");
     var ctx_line = canvas_line.getContext("2d");
+    var canvas_straight_line = document.getElementById("canvas-straight-line");
+    var ctx_straight_line = canvas_straight_line.getContext("2d");
     var stampsize=96;
     var $stamp = $("#twitterStamp");
     var text = {text:"text",color:"#000000",size:12};
@@ -63,16 +65,23 @@ $(function () {
         mouseX = e.clientX - rect.left;
         mouseY = e.clientY - rect.top;
 
-        if(brushType=="line" && draw === true) {
-            ctx.beginPath();
-            ctx.lineWidth = line.size;
-            ctx.strokeStyle = line.color;
-            ctx.moveTo(mouseX1,mouseY1);
-            ctx.lineTo(mouseX,mouseY);
-            ctx.lineCap = "round";
-            ctx.stroke();
-            mouseX1 = mouseX;
-            mouseY1 = mouseY;
+        if(draw === true) {
+            if(brushType=="line" || brushType == "straight-line"){
+                ctx.beginPath();
+                ctx.lineWidth = line.size;
+                ctx.strokeStyle = line.color;
+                ctx.moveTo(mouseX1,mouseY1);
+                ctx.lineTo(mouseX,mouseY);
+                ctx.lineCap = "round";
+                if(brushType=="line"){
+                    ctx.stroke();
+                    mouseX1 = mouseX;
+                    mouseY1 = mouseY;
+                }else{
+                    undoImage.mouse.undo();
+                    ctx.stroke();
+                }
+            }
             
         }else if(draw == false){
                 undoImage.mouse.undo();
@@ -84,7 +93,7 @@ $(function () {
                     ctx.font = text.size ;
                     ctx.fillStyle = text.color;
                     ctx.fillText(text.text,mouseX,mouseY);
-                }else if(brushType == "line"){
+                }else if(brushType == "line" || brushType == "straight-line"){
                     ctx.beginPath();
                     ctx.fillStyle = line.color;
                     ctx.arc(mouseX, mouseY, line.size/2, 0, Math.PI*2, false);
@@ -98,7 +107,7 @@ $(function () {
         mouseY1 = mouseY;
         undoImage.mouse.undo();
         undoImage.save();
-        if(brushType=="line"){
+        if(brushType=="line" || brushType=="straight-line"){
             ctx.beginPath();
             ctx.fillStyle = line.color;
             ctx.arc(mouseX, mouseY, line.size/2, 0, Math.PI*2, false);
@@ -111,6 +120,7 @@ $(function () {
         var rect = e.target.getBoundingClientRect();
         mouseX = e.clientX - rect.left;
         mouseY = e.clientY - rect.top;
+        
         if(brushType == "stamp"){
             var img = new Image();
             img.src = $stamp.attr("src");
@@ -119,6 +129,15 @@ $(function () {
             ctx.font = text.size ;
             ctx.fillStyle = text.color;
             ctx.fillText(text.text,mouseX,mouseY);
+        }else if(brushType == "straight-line"){
+            undoImage.mouse.undo();
+            ctx.beginPath();
+            ctx.lineWidth = line.size;
+            ctx.strokeStyle = line.color;
+            ctx.moveTo(mouseX1,mouseY1);
+            ctx.lineTo(mouseX,mouseY);
+            ctx.lineCap = "round";
+            ctx.stroke();
         }
         undoImage.mouse.save();
     });
@@ -200,11 +219,30 @@ $(function () {
     
     var lineRangeChangeHandler = function(){
         line.size = $lineSize.val();
+        
         ctx_line.clearRect(0,0,64,64);
         ctx_line.beginPath();
-        ctx_line.fillStyle = line.color;
-        ctx_line.arc(32, 32, line.size/2, 0, Math.PI*2, false);
-        ctx_line.fill();
+        ctx_line.strokeStyle = line.color;
+        ctx_line.lineWidth = line.size;
+
+        ctx_line.arc(20, 32, 12, 0, Math.PI, false);
+        ctx_line.stroke();
+        ctx_line.beginPath();
+        ctx_line.lineCap="round";
+        ctx_line.arc(48, 32, 16, Math.PI, 1.5*Math.PI, false);
+        ctx_line.stroke();
+        
+        ctx_straight_line.clearRect(0,0,64,64);
+        ctx_straight_line.lineWidth = line.size;
+        ctx_straight_line.strokeStyle = line.color;
+        ctx_straight_line.lineCap="round";
+        ctx_straight_line.beginPath();
+        ctx_straight_line.moveTo(16,32);
+        ctx_straight_line.lineTo(48,16);
+        ctx_straight_line.stroke();
+        ctx_straight_line.moveTo(48,16);
+        ctx_straight_line.lineTo(48,48);
+        ctx_straight_line.stroke();
     };
     lineRangeChangeHandler();
     $lineSize.on("input",lineRangeChangeHandler);
@@ -308,6 +346,20 @@ $(function () {
 
         brushType = this.getAttribute("brush");
     });
+    
+    
+/*
+ * Keyboard Shortcut
+ */
+    $(document).on("keydown",canvas,function(e){
+        if(e.ctrlKey) {
+            if(e.keyCode == 90){
+                undoImage.undo();
+            }
+        }
+    });
+
+    
     
     
     function sizing(){

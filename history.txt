@@ -8,3 +8,6 @@
     update:local画像のとりこみ
     change:画像の縦横比を維持
     bugfix:canvasのカーソルを非表示
+2016-06-05 v1.0.3
+    update:UndoにショートカットC-zを設定
+    update:直線にPC版のみ対応（モバイル未対応）

@@ -20,7 +20,7 @@
         <![endif]-->
 
         <!-- Add your site or application content here -->
-        <h2>TwiCommunityDrawer<small> <a href="history.txt">v1.0.2</a></small></h2>
+        <h2>TwiCommunityDrawer<small> <a href="history.txt">v1.0.3</a></small></h2>
         <div id="container">
             <div id="button-container">
                 <div class="cnt-cell"> 
@@ -36,6 +36,7 @@
                     <input type="range" id="line-size" min="1" max="64" value="6"><br />
                     <input class="jscolor brushBtn" brush="line" id="line-color" value="000000"><br />
                     <button id="btnLine" class="brushBtn" brush="line"><canvas id="canvas-line" width="64" height="64" ></canvas></button>
+                    <button id="btnStraightLine" class="brushBtn" brush="straight-line"><canvas id="canvas-straight-line" width="64" height="64" ></canvas></button>
                     
                 </div>
                 <div class="cnt-cell">
@@ -49,7 +50,7 @@
                     <h3>edit</h3>
                     W:<input type="range" id="canvas-width" class="canvas-size" min="480" max="1920" value="640"><br />
                     H:<input type="range" id="canvas-height" class="canvas-size" min="480" max="1920" value="640"><br />
-                    <button id="btnUndo">Undo</button><br />
+                    <button id="btnUndo">Undo(C-z)</button><br />
                     <button id="download">Download</button><br />
                     <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://m77.pw/twidraw/">Tweet</a>
 <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
