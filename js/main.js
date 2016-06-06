@@ -44,6 +44,7 @@ $(function () {
 	var $canvas_size = $(".canvas-size");
 	var $canvas_width = $("#canvas-width");
 	var $canvas_height = $("#canvas-height");
+	var $canvas_wrapper = $("#canvas-wrapper");
 	var undoImage = {
 		img :[ctx.getImageData(0, 0,canvas.width,canvas.height)],
 		undoimg :[],
@@ -173,11 +174,15 @@ $(function () {
 	});
 
 	//touch
-	var finger=new Array;
+	var touch={
+		finger:[],
+		move:false,
+		count:0,
+		dx:0,dy:0
+	};
 	for(var i=0;i<10;i++){
-		finger[i]={
-			x:0,y:0,x1:0,y1:0,
-			color:"rgb(0,0,0)"
+		touch.finger[i]={
+			x:0,y:0,x1:0,y1:0
 		};
 	}
 
@@ -187,58 +192,82 @@ $(function () {
 		var rect = e.target.getBoundingClientRect();
 		undoImage.current.load();
 		undoImage.save();
-		for(var i=0;i<finger.length;i++){
+		touch.count = 0;
+		touch.valid = [];
+		
+		for(var i=0;i<touch.finger.length;i++){
 			if(typeof e.touches[i] === "undefined" ){
 				continue;
 			}
-			
-			finger[i].x1 = e.touches[i].clientX-rect.left;
-			finger[i].y1 = e.touches[i].clientY-rect.top;
-			if(brushType == "stamp"){
-				draw.stamp(finger[i].x1,finger[i].y1);
-			}else if(brushType == "text"){
-				draw.text(finger[i].x1,finger[i].y1);
-			}else if(brushType=="line" || brushType=="straight-line"){
-				ctx.beginPath();
-				ctx.fillStyle = line.color;
-				ctx.arc(finger[i].x1,finger[i].y1, line.size/2, 0, Math.PI*2, false);
-				ctx.fill();
+			touch.count++;
+			touch.move = touch.count > 1 || touch.move ? true:false;
+			touch.valid.push(i);
+			touch.finger[i].x1 = e.touches[i].clientX-rect.left;
+			touch.finger[i].y1 = e.touches[i].clientY-rect.top;
+			if( touch.move ){
+				undoImage.current.load();
+			}else{
+				if(brushType == "stamp"){
+					draw.stamp(touch.finger[i].x1,touch.finger[i].y1);
+				}else if(brushType == "text"){
+					draw.text(touch.finger[i].x1,touch.finger[i].y1);
+				}else if(brushType=="line" || brushType=="straight-line"){
+					ctx.beginPath();
+					ctx.fillStyle = line.color;
+					ctx.arc(touch.finger[i].x1,touch.finger[i].y1, line.size/2, 0, Math.PI*2, false);
+					ctx.fill();
+				}
 			}
 		}
+		
 	});
 
 	
 	canvas.addEventListener("touchmove",function(e){
 		e.preventDefault();
 		var rect = e.target.getBoundingClientRect();
-		for(var i=0;i<finger.length;i++){
+		touch.dx = 0;
+		touch.dy = 0;
+		for(var i=0;i<touch.finger.length;i++){
 			if(typeof e.touches[i] === "undefined" ){
 				continue;
 			}
-			finger[i].x = e.touches[i].clientX-rect.left;
-			finger[i].y = e.touches[i].clientY-rect.top;
-			if ( brushType == "line"){
-				draw.line(finger[i].x1,finger[i].y1,finger[i].x,finger[i].y);
-				finger[i].x1=finger[i].x;
-				finger[i].y1=finger[i].y;
-			}else{
-				undoImage.current.load();
-				if(brushType == "stamp"){
-					draw.stamp(finger[i].x,finger[i].y);
-				}else if(brushType == "text"){
-					draw.text(finger[i].x,finger[i].y);
-				}else if(brushType == "straight-line"){
-					draw.line(finger[i].x1,finger[i].y1,finger[i].x,finger[i].y);
-				}
-			}
+			touch.finger[i].x = e.touches[i].clientX-rect.left;
+			touch.finger[i].y = e.touches[i].clientY-rect.top;
 			
+			if( !touch.move ){
 
+				if ( brushType == "line"){
+					draw.line(touch.finger[i].x1,touch.finger[i].y1,touch.finger[i].x,touch.finger[i].y);
+					touch.finger[i].x1=touch.finger[i].x;
+					touch.finger[i].y1=touch.finger[i].y;
+				}else{
+					undoImage.current.load();
+					if(brushType == "stamp"){
+						draw.stamp(touch.finger[i].x,touch.finger[i].y);
+					}else if(brushType == "text"){
+						draw.text(touch.finger[i].x,touch.finger[i].y);
+					}else if(brushType == "straight-line"){
+						draw.line(touch.finger[i].x1,touch.finger[i].y1,touch.finger[i].x,touch.finger[i].y);
+					}
+				}
+			}else{
+				touch.dx += touch.finger[i].x1-touch.finger[i].x;
+				touch.dy += touch.finger[i].y1-touch.finger[i].y;
+				touch.finger[i].x1=touch.finger[i].x;
+				touch.finger[i].y1=touch.finger[i].y;
+			}
 		}
+		$canvas_wrapper.scrollTop(~~(0.5+touch.dy/touch.count) + $canvas_wrapper.scrollTop());
+		$canvas_wrapper.scrollLeft(~~(0.5+touch.dx/touch.count) + $canvas_wrapper.scrollLeft());
+		
 
 	});
 	
 	canvas.addEventListener("touchend",function(e){
 		undoImage.current.save();
+		touch.count--;
+		if(touch.count == 0)touch.move=false;
 	});
 
 	$("#btnUndo").on(_touch,function(e){
@@ -410,8 +439,8 @@ $(function () {
 
 
 	function sizing(){
-		var h = $("#canvas-wrapper").height()*4;
-		var w = $("#canvas-wrapper").width()-4;
+		var h = $("#canvas-wrapper").height()-2;
+		var w = $("#canvas-wrapper").width()-2;
 		var ch = document.getElementById("canvas-height");
 		var cw = document.getElementById("canvas-width");
 		ch.value = h;

@@ -113,10 +113,12 @@ body{
 	position: relative;
 }
 #canvas-wrapper{
-	width: 100%;
-	height: 70%;
+	width: 100vw;
+	height: 90vh;
     top:30%;
-    overflow: scroll;
+    overflow-x: scroll;
+    overflow-y: scroll;
+    max-height: 70%;
 
 	/*position: fixed;*/
 }
