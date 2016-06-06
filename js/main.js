@@ -8,8 +8,28 @@ $(function () {
 	var mouseX1,mouseX,mouseY,mouseY1;
 
 	var brushType = "line";
-	var draw = false;
-
+	var draw={
+		status: false,
+		text: function(x,y){
+			ctx.font = text.size ;
+			ctx.fillStyle = text.color;
+			ctx.fillText(text.text,x,y);
+		},
+		stamp: function(x,y){
+			var img = new Image();
+			img.src = $stamp.attr("src");
+			ctx.drawImage(img,x,y,stampsize,stampsize/img.width*img.height);
+		},
+		line: function(x1,y1,x2,y2){
+			ctx.beginPath();
+			ctx.lineWidth = line.size;
+			ctx.strokeStyle = line.color;
+			ctx.moveTo(x1,y1);
+			ctx.lineTo(x2,y2);
+			ctx.lineCap = "round";
+			ctx.stroke();
+		},
+	};
 	var $stampSize = $("#stamp-size");
 	var $lineSize = $("#line-size");
 	var canvas_line = document.getElementById("canvas-line");
@@ -80,40 +100,29 @@ $(function () {
 
 
 
+
 	//mouse 
 	canvas.addEventListener("mousemove",function(e) {
 		var rect = e.target.getBoundingClientRect();
 		mouseX = e.clientX - rect.left;
 		mouseY = e.clientY - rect.top;
 
-		if(draw === true) {
-			if(brushType=="line" || brushType == "straight-line"){
-				ctx.beginPath();
-				ctx.lineWidth = line.size;
-				ctx.strokeStyle = line.color;
-				ctx.moveTo(mouseX1,mouseY1);
-				ctx.lineTo(mouseX,mouseY);
-				ctx.lineCap = "round";
-				if(brushType=="line"){
-					ctx.stroke();
-					mouseX1 = mouseX;
-					mouseY1 = mouseY;
-				}else{
-					undoImage.current.load();
-					ctx.stroke();
-				}
+		if(draw.status === true) {
+			if(brushType=="line"){
+				draw.line(mouseX1,mouseY1,mouseX,mouseY);
+				mouseX1 = mouseX;
+				mouseY1 = mouseY;
+			} else if(brushType == "straight-line"){
+				undoImage.current.load();
+				draw.line(mouseX1,mouseY1,mouseX,mouseY);
 			}
 
-		}else if(draw == false){
+		}else if(draw.status == false){
 			undoImage.current.load();
 			if(brushType == "stamp"){
-				var img = new Image();
-				img.src = $stamp.attr("src");
-				ctx.drawImage(img,mouseX,mouseY,stampsize,stampsize/img.width*img.height);
+				draw.stamp(mouseX,mouseY);
 			}else if(brushType == "text"){
-				ctx.font = text.size ;
-				ctx.fillStyle = text.color;
-				ctx.fillText(text.text,mouseX,mouseY);
+				draw.text(mouseX,mouseY);
 			}else if(brushType == "line" || brushType == "straight-line"){
 				ctx.beginPath();
 				ctx.fillStyle = line.color;
@@ -123,7 +132,7 @@ $(function () {
 		}
 	});
 	canvas.addEventListener("mousedown",function(e) {
-		draw = true;
+		draw.status = true;
 		mouseX1 = mouseX;
 		mouseY1 = mouseY;
 		undoImage.current.load();
@@ -133,23 +142,23 @@ $(function () {
 			ctx.fillStyle = line.color;
 			ctx.arc(mouseX, mouseY, line.size/2, 0, Math.PI*2, false);
 			ctx.fill();
+		}else if(brushType == "stamp"){
+			draw.stamp(mouseX,mouseY);
+		}else if(brushType == "text"){
+			draw.text(mouseX,mouseY);
 		}
 	});
 	canvas.addEventListener("mouseup", function(e){
-		draw = false;
+		draw.status = false;
 
 		var rect = e.target.getBoundingClientRect();
 		mouseX = e.clientX - rect.left;
 		mouseY = e.clientY - rect.top;
 
 		if(brushType == "stamp"){
-			var img = new Image();
-			img.src = $stamp.attr("src");
-			ctx.drawImage(img,mouseX,mouseY,stampsize,stampsize/img.width*img.height);
+			draw.stamp(mouseX,mouseY);
 		}else if(brushType == "text"){
-			ctx.font = text.size ;
-			ctx.fillStyle = text.color;
-			ctx.fillText(text.text,mouseX,mouseY);
+			draw.text(mouseX,mouseY);
 		}else if(brushType == "straight-line"){
 			undoImage.current.load();
 			ctx.beginPath();
@@ -172,7 +181,7 @@ $(function () {
 		};
 	}
 
-	//タッチした瞬間座標を取得
+	
 	canvas.addEventListener("touchstart",function(e){
 		e.preventDefault();
 		var rect = e.target.getBoundingClientRect();
@@ -186,18 +195,19 @@ $(function () {
 			finger[i].x1 = e.touches[i].clientX-rect.left;
 			finger[i].y1 = e.touches[i].clientY-rect.top;
 			if(brushType == "stamp"){
-				var img = new Image();
-				img.src = $stamp.attr("src");
-				ctx.drawImage(img,finger[i].x1,finger[i].y1,stampsize,stampsize/img.width*img.height);
+				draw.stamp(finger[i].x1,finger[i].y1);
 			}else if(brushType == "text"){
-				ctx.font = text.size ;
-				ctx.fillStyle = text.color;
-				ctx.fillText(text.text,finger[i].x1,finger[i].y1);
+				draw.text(finger[i].x1,finger[i].y1);
+			}else if(brushType=="line" || brushType=="straight-line"){
+				ctx.beginPath();
+				ctx.fillStyle = line.color;
+				ctx.arc(finger[i].x1,finger[i].y1, line.size/2, 0, Math.PI*2, false);
+				ctx.fill();
 			}
 		}
 	});
 
-	//タッチして動き出したら描画
+	
 	canvas.addEventListener("touchmove",function(e){
 		e.preventDefault();
 		var rect = e.target.getBoundingClientRect();
@@ -207,17 +217,21 @@ $(function () {
 			}
 			finger[i].x = e.touches[i].clientX-rect.left;
 			finger[i].y = e.touches[i].clientY-rect.top;
-			if(brushType=="line"){
-				ctx.beginPath();
-				ctx.moveTo(finger[i].x1,finger[i].y1);
-				ctx.lineTo(finger[i].x,finger[i].y);
-				ctx.lineWidth = line.size;
-				ctx.strokeStyle = line.color;
-				ctx.lineCap="round";
-				ctx.stroke();
+			if ( brushType == "line"){
+				draw.line(finger[i].x1,finger[i].y1,finger[i].x,finger[i].y);
+				finger[i].x1=finger[i].x;
+				finger[i].y1=finger[i].y;
+			}else{
+				undoImage.current.load();
+				if(brushType == "stamp"){
+					draw.stamp(finger[i].x,finger[i].y);
+				}else if(brushType == "text"){
+					draw.text(finger[i].x,finger[i].y);
+				}else if(brushType == "straight-line"){
+					draw.line(finger[i].x1,finger[i].y1,finger[i].x,finger[i].y);
+				}
 			}
-			finger[i].x1=finger[i].x;
-			finger[i].y1=finger[i].y;
+			
 
 		}
 
@@ -233,8 +247,6 @@ $(function () {
 	$("#btnRedo").on(_touch,function(e){
 		undoImage.redo();
 	});
-
-
 
 
 
@@ -371,14 +383,12 @@ $(function () {
 	var canvasSizeChangeHandler = function(){
 		var w = $canvas_width.val();
 		var h = $canvas_height.val();
-		$(canvas).attr({height:h});
-		$(canvas).attr({width:w});
+		$(canvas).attr({height:h,width:w});
 		undoImage.current.load();
 	}
 	$canvas_size.change(canvasSizeChangeHandler);
 
 	$(".brushBtn").on(_touch,function(e){
-
 		brushType = this.getAttribute("brush");
 	});
 
@@ -406,8 +416,7 @@ $(function () {
 		var cw = document.getElementById("canvas-width");
 		ch.value = h;
 		cw.value = w;
-		$("#canvas").attr({height:h});
-		$("#canvas").attr({width:w});
+		$("#canvas").attr({height:h,width:w});
 	}
 
 });

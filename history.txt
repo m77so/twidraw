@@ -14,4 +14,9 @@
 2016-06-05 v1.0.3.1
     change:tweetボタンの位置
 2016-06-06 v1.0.4
-    update:Redo(C-y)    
+    update:Redo(C-y)   
+2016-06-06 v1.0.5
+    update:モバイル版直線に対応
+    update:モバイル版Undo,Redo対応
+    change:モバイル版スタンプ、テキストにプレビュー（タッチが終了時点で描画）
+    change:描画方法をモバイルとPCと統一して整理
