@@ -39,9 +39,9 @@ $(function () {
 		undo : function(){
 			if (this.img.length > 0) {
 				var img = this.img.pop();
-				this.undoimg.push(this.mouse.img);
+				this.undoimg.push(this.current.img);
 				ctx.putImageData(img,0,0);
-				this.mouse.img = img;
+				this.current.img = img;
 				while(this.undoimg.length > 20){
 					this.undoimg.shift();
 				}
@@ -51,20 +51,20 @@ $(function () {
 		redo : function(){
 			if (this.undoimg.length > 0) {
 				var img = this.undoimg.pop();
-				this.img.push(this.mouse.img);
+				this.img.push(this.current.img);
 				ctx.putImageData(img,0,0);
-				this.mouse.img = img;
+				this.current.img = img;
 				while(this.img.length > 20){
 					this.img.shift();
 				}
 				this.check();
 			}
 		},
-		mouse:{
+		current:{
 			save:function(){
 				this.img = ctx.getImageData(0, 0,1920,1920);
 			},
-			undo:function(){
+			load:function(){
 				if(this.img != null){
 					ctx.putImageData(this.img,0,0);
 				}
@@ -76,7 +76,7 @@ $(function () {
 		}
 	};
 	undoImage.check();
-	undoImage.mouse.save();
+	undoImage.current.save();
 
 
 
@@ -99,13 +99,13 @@ $(function () {
 					mouseX1 = mouseX;
 					mouseY1 = mouseY;
 				}else{
-					undoImage.mouse.undo();
+					undoImage.current.load();
 					ctx.stroke();
 				}
 			}
 
 		}else if(draw == false){
-			undoImage.mouse.undo();
+			undoImage.current.load();
 			if(brushType == "stamp"){
 				var img = new Image();
 				img.src = $stamp.attr("src");
@@ -126,7 +126,7 @@ $(function () {
 		draw = true;
 		mouseX1 = mouseX;
 		mouseY1 = mouseY;
-		undoImage.mouse.undo();
+		undoImage.current.load();
 		undoImage.save();
 		if(brushType=="line" || brushType=="straight-line"){
 			ctx.beginPath();
@@ -151,7 +151,7 @@ $(function () {
 			ctx.fillStyle = text.color;
 			ctx.fillText(text.text,mouseX,mouseY);
 		}else if(brushType == "straight-line"){
-			undoImage.mouse.undo();
+			undoImage.current.load();
 			ctx.beginPath();
 			ctx.lineWidth = line.size;
 			ctx.strokeStyle = line.color;
@@ -160,7 +160,7 @@ $(function () {
 			ctx.lineCap = "round";
 			ctx.stroke();
 		}
-		undoImage.mouse.save();
+		undoImage.current.save();
 	});
 
 	//touch
@@ -176,9 +176,13 @@ $(function () {
 	canvas.addEventListener("touchstart",function(e){
 		e.preventDefault();
 		var rect = e.target.getBoundingClientRect();
-
-		undoImage = ctx.getImageData(0, 0,canvas.width,canvas.height);
+		undoImage.current.load();
+		undoImage.save();
 		for(var i=0;i<finger.length;i++){
+			if(typeof e.touches[i] === "undefined" ){
+				continue;
+			}
+			
 			finger[i].x1 = e.touches[i].clientX-rect.left;
 			finger[i].y1 = e.touches[i].clientY-rect.top;
 			if(brushType == "stamp"){
@@ -198,6 +202,9 @@ $(function () {
 		e.preventDefault();
 		var rect = e.target.getBoundingClientRect();
 		for(var i=0;i<finger.length;i++){
+			if(typeof e.touches[i] === "undefined" ){
+				continue;
+			}
 			finger[i].x = e.touches[i].clientX-rect.left;
 			finger[i].y = e.touches[i].clientY-rect.top;
 			if(brushType=="line"){
@@ -214,6 +221,10 @@ $(function () {
 
 		}
 
+	});
+	
+	canvas.addEventListener("touchend",function(e){
+		undoImage.current.save();
 	});
 
 	$("#btnUndo").on(_touch,function(e){
@@ -317,7 +328,7 @@ $(function () {
 	$("#download").on(_touch,function(ev){
 		//http://qiita.com/0829/items/a8c98c8f53b2e821ac94
 		//http://jsdo.it/Yukisuke/c1VD
-		undoImage.mouse.undo();
+		undoImage.current.load();
 		var base64 = canvas.toDataURL('image/png');
 		var bin = atob(base64.replace(/^.*,/, ''));
 		var buffer = new Uint8Array(bin.length);
@@ -354,7 +365,7 @@ $(function () {
 		}
 
 		undoImage.save();
-		undoImage.mouse.save();
+		undoImage.current.save();
 	});
 
 	var canvasSizeChangeHandler = function(){
@@ -362,7 +373,7 @@ $(function () {
 		var h = $canvas_height.val();
 		$(canvas).attr({height:h});
 		$(canvas).attr({width:w});
-		undoImage.mouse.undo();
+		undoImage.current.load();
 	}
 	$canvas_size.change(canvasSizeChangeHandler);
 
