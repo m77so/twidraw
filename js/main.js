@@ -145,8 +145,12 @@ $(function () {
 			ctx.fill();
 		}else if(brushType == "stamp"){
 			draw.stamp(mouseX,mouseY);
+			undoImage.current.save();
+			draw.status = false;
 		}else if(brushType == "text"){
 			draw.text(mouseX,mouseY);
+			undoImage.current.save();
+			draw.status = false;
 		}
 	});
 	canvas.addEventListener("mouseup", function(e){
@@ -156,11 +160,7 @@ $(function () {
 		mouseX = e.clientX - rect.left;
 		mouseY = e.clientY - rect.top;
 
-		if(brushType == "stamp"){
-			draw.stamp(mouseX,mouseY);
-		}else if(brushType == "text"){
-			draw.text(mouseX,mouseY);
-		}else if(brushType == "straight-line"){
+		if(brushType == "straight-line"){
 			undoImage.current.load();
 			ctx.beginPath();
 			ctx.lineWidth = line.size;
@@ -170,7 +170,9 @@ $(function () {
 			ctx.lineCap = "round";
 			ctx.stroke();
 		}
-		undoImage.current.save();
+		if(brushType == "straight-line" || brushType == "line"){
+			undoImage.current.save();
+		}
 	});
 
 	//touch

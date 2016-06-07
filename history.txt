@@ -27,3 +27,5 @@
 2016-06-07 v1.0.6.1
     change:canvasがスクロール可能ということが多少わかりやすく
     change:Undo,Redoに矢印を付記
+2016-06-07 v1.0.6.2
+    bugfix:PC版 stamp,text が二回押される問題
