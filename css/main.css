@@ -113,12 +113,18 @@ body{
 	position: relative;
 }
 #canvas-wrapper{
+    box-sizing: border-box;
 	width: 100vw;
 	height: 90vh;
     top:30%;
     overflow-x: scroll;
     overflow-y: scroll;
     max-height: 70%;
+    padding-top: 12px;
+    padding-left:12px;
+    padding-right: 50vw;
+    padding-bottom:50vh;
+    background-color: #999;
 
 	/*position: fixed;*/
 }

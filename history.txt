@@ -24,3 +24,6 @@
     update:モバイル版canvasスクロールに対応
     bugfix:モバイル版全面canvasになりどうにもならなくなる問題に対策
     issue :モバイル版canvasがスクロール可能ということがわかりにくい
+2016-06-07 v1.0.6.1
+    change:canvasがスクロール可能ということが多少わかりやすく
+    change:Undo,Redoに矢印を付記
